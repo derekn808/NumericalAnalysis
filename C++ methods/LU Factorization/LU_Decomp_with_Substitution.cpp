@@ -4,8 +4,8 @@
 
 #define N 3
 
-double upper[N][N];
-double lower[N][N];
+double u[N][N];
+double l[N][N];
 double solution[N] = {1, 2, -3};
 
 void print(double matrix[N][N]) 
@@ -24,29 +24,24 @@ void printFull(double matrix[N][N+1])
    printf("\n"); 
 }
 
-void luDecomposition(double matrix[N][N]) {
-   for (int i = 0; i < N; i++) {
-      for (int j = 0; j < N; j++) {
-         if (j < i)
-            lower[j][i] = 0;
-         else {
-            lower[j][i] = matrix[j][i];
-            for (int k = 0; k < i; k++) {
-               lower[j][i] = lower[j][i] - lower[j][k] * upper[k][i];
-            }
+void luDecomposition(double a[N][N]) {
+   double sum;
+    for(int i=0;i<N;i++) {
+      l[i][i]=1;
+
+      for(int j=i;j<N;j++) {
+         for(int s=0;s<i-1;s++) {
+             sum+= l[i][s]*u[s][j];
          }
+         u[i][j]=a[i][j]-sum;
       }
-      for (int j = 0; j < N; j++) {
-         if (j < i)
-            upper[i][j] = 0;
-         else if (j == i)
-            upper[i][j] = 1;
-         else {
-            upper[i][j] = matrix[i][j] / lower[i][i];
-            for (int k = 0; k < i; k++) {
-               upper[i][j] = upper[i][j] - ((lower[i][k] * upper[k][j]) / lower[i][i]);
-            }
+
+      for(int k=i+1;k<N;k++) {
+         double sum=0;
+         for(int s=0;s<i-1;s++) {
+            sum+=l[k][s]*u[s][i];
          }
+         l[k][i]=(a[k][i]-sum)/u[i][i];
       }
    }
 }
@@ -116,16 +111,17 @@ int main()
    printf("Decomposing matrix:\n");
    print(matrix);
    luDecomposition(matrix);
-   printf("Upper triangular matrix:\n");
-   print(upper);
-   printf("Lower triangular matrix:\n");
-   print(lower);
+   printf("L:\n");
+   print(l);
+   printf("U:\n");
+   print(u);
 
-   forwardSubstitution(lower, finalLower);
+
+   forwardSubstitution(l, finalLower);
    printf("Solving:\n");
    printFull(finalLower);
    lowerSolve(finalLower);
-   forwardSubstitution(upper, finalUpper);
+   forwardSubstitution(u, finalUpper);
    printf("Solving:\n");
    printFull(finalUpper);
    upperSolve(finalUpper);
