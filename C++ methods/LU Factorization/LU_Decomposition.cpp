@@ -4,40 +4,43 @@
 
 #define N 4
 
-double upper[N][N];
-double lower[N][N];
+double l[N][N];
+double u[N][N];
 
-void print(double matrix[N][N]) 
-{ 
+void print(double matrix[N][N]) { 
    for (int i=0; i<N; i++, printf("\n"))
       for (int j=0; j<N; j++) 
          printf("%lf ", matrix[i][j]); 
    printf("\n"); 
 }
 
-void luDecomposition(double matrix[N][N]) {
-   for (int i = 0; i < N; i++) {
-      for (int j = 0; j < N; j++) {
-         if (j < i)
-            lower[j][i] = 0;
-         else {
-            lower[j][i] = matrix[j][i];
-            for (int k = 0; k < i; k++) {
-               lower[j][i] = lower[j][i] - lower[j][k] * upper[k][i];
-            }
-         }
+int isDiagonal(double matrix[N][N]) {
+   for(int i=0; i<N; i++) {
+      if(matrix[i][i] == 0) {
+         printf("Matrix is diagonal cannot be solved.\n");
+         return 1;
       }
-      for (int j = 0; j < N; j++) {
-         if (j < i)
-            upper[i][j] = 0;
-         else if (j == i)
-            upper[i][j] = 1;
-         else {
-            upper[i][j] = matrix[i][j] / lower[i][i];
-            for (int k = 0; k < i; k++) {
-               upper[i][j] = upper[i][j] - ((lower[i][k] * upper[k][j]) / lower[i][i]);
-            }
+   }
+   return 0;
+}
+
+void luDecomposition(double a[N][N]) {
+   double sum;
+   for(int i=0; i<N; i++) {
+      l[i][i] = 1;
+      for(int j=i; j<N; j++) {
+         for(int k=0; k<i-1; k++) {
+             sum += l[i][k] * u[k][j];
          }
+         u[i][j] = a[i][j] - sum;
+      }
+
+      for(int j=i+1; j<N; j++) {
+         sum = 0;
+         for(int k=0; k<i-1; k++) {
+            sum += l[j][k] * u[k][i];
+         }
+         l[j][i] = (a[j][i] - sum)/u[i][i];
       }
    }
 }
@@ -53,12 +56,21 @@ int main()
 
    printf("Decomposing matrix:\n");
    print(matrix);
+   if(isDiagonal(matrix)){
+      return 0;
+   }
 
    luDecomposition(matrix);
-   printf("Upper triangular matrix:\n");
-   print(upper);
-   printf("Lower triangular matrix:\n");
-   print(lower);
+   printf("L:\n");
+   print(l);
+   if(isDiagonal(l)){
+      return 0;
+   }
+   printf("U:\n");
+   print(u);
+   if(isDiagonal(u)){
+      return 0;
+   }
    return 0; 
 } 
 
